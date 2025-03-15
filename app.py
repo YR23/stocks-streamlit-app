@@ -57,14 +57,6 @@ for i, symbol in enumerate(symbols):
     )
 
 fig.update_layout(
-    updatemenus=[dict(
-        active=0,
-        buttons=dropdown_buttons,
-        direction="down",
-        x=1.1,
-        y=0.8,
-        showactive=True,
-    )],
     title=f"Candlestick Chart for {symbols[0]} - 1 Year of Daily Data",
     xaxis_title="Datetime",
     yaxis_title="Price",
