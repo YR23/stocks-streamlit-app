@@ -45,7 +45,7 @@ with col2:
 data_dict = {}
 
 if go_plot:
-    df = read_symbol_data_from_s3(symbol=symbol)
+    df = read_symbol_data_from_s3(symbol=symbol, tf='weekly')
     # Flatten multi-index columns if present
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.get_level_values(0)
