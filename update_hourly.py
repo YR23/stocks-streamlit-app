@@ -52,7 +52,7 @@ def update_symbol_hourly(symbol, period, interval):
         df_existing = None
 
     df_new = yf.download(tickers=symbol, period=period, interval=interval).reset_index()
-    df_new['Datetime'] = pd.to_datetime(df_new['Datetime'])
+
     if df_new.empty:
         print(f"No new data available for {symbol}")
         return
@@ -60,6 +60,7 @@ def update_symbol_hourly(symbol, period, interval):
     if isinstance(df_new.columns, pd.MultiIndex):
         df_new.columns = df_new.columns.get_level_values(0)
 
+    df_new['Datetime'] = pd.to_datetime(df_new['Datetime'])
     df_new = df_new.reset_index(drop=True)
 
     # Update the CSV if new data is found
