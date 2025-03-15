@@ -169,7 +169,6 @@ for i, trace in enumerate(fig.data):
         trace.visible = False
 
 # Update layout with the corresponding Fibonacci shapes and title
-fig.layout.shapes = shapes_dict[selected_symbol]
 fig.update_layout(
     title=f"Candlestick, 50 EMA, RSI, MACD & Fibonacci Levels for {selected_symbol} - 1 Year of Daily Data",
     xaxis_title="Date",
