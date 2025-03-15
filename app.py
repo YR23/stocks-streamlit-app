@@ -1,5 +1,6 @@
 import streamlit as st
 
+from data_utils import read_symbol_data_from_s3
 from stock_utils import get_sp500_tickers
 
 st.set_page_config(layout="wide")  # Enable wide mode
@@ -44,7 +45,7 @@ with col2:
 data_dict = {}
 
 if go_plot:
-    df = yf.download(tickers=symbol, period='1y', interval='1d')
+    df = read_symbol_data_from_s3(symbol=symbol)
     # Flatten multi-index columns if present
     if isinstance(df.columns, pd.MultiIndex):
         df.columns = df.columns.get_level_values(0)
