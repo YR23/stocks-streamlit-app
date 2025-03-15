@@ -33,6 +33,6 @@ def read_symbol_data_from_s3(symbol):
     data = response['Body'].read()
 
     # Read the CSV data into a DataFrame.
-    df = pd.read_csv(io.BytesIO(data), parse_dates=['Datetime'])
+    df = pd.read_csv(io.BytesIO(data))
     st.dataframe(df)
     return df
