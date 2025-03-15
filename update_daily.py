@@ -19,7 +19,7 @@ def get_sp500_tickers():
 AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY")
 AWS_SECRET_KEY = os.environ.get("AWS_SECRET_KEY")
 BUCKET_NAME = os.environ.get("BUCKET_NAME", "stocks-streamlit")
-PREFIX = 'data/1h/'  # Files will be saved under s3://stocks-streamlit/data/1h/
+PREFIX = 'data/1d/'  # Files will be saved under s3://stocks-streamlit/data/1h/
 
 # Initialize the S3 client
 s3 = boto3.client('s3',
