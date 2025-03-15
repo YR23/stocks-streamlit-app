@@ -4,7 +4,8 @@ import pandas as pd
 import boto3
 import botocore
 
-# Use an official source for S&P 500 tickers (from the datasets repo)
+
+# Helper function to get S&P 500 tickers from an official dataset on GitHub
 def get_sp500_tickers():
     url = "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/master/data/constituents.csv"
     df = pd.read_csv(url)
@@ -13,17 +14,18 @@ def get_sp500_tickers():
     tickers = [ticker.replace('.', '-') for ticker in tickers]
     return tickers
 
+
 # AWS S3 configuration: retrieve credentials from environment variables
 AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY")
 AWS_SECRET_KEY = os.environ.get("AWS_SECRET_KEY")
 BUCKET_NAME = os.environ.get("BUCKET_NAME", "stocks-streamlit")
-# For daily data, we use a subfolder "data/1d/"
-PREFIX = 'data/1d/'
+PREFIX = 'data/1h/'  # Files will be saved under s3://stocks-streamlit/data/1h/
 
 # Initialize the S3 client
 s3 = boto3.client('s3',
                   aws_access_key_id=AWS_ACCESS_KEY,
                   aws_secret_access_key=AWS_SECRET_KEY)
+
 
 def file_exists_in_s3(bucket, key):
     try:
@@ -35,53 +37,58 @@ def file_exists_in_s3(bucket, key):
         else:
             raise
 
-def update_symbol_daily(symbol):
-    key = f"{PREFIX}{symbol}.csv"  # e.g., data/1d/AAPL.csv
+
+def update_symbol_hourly(symbol, period, interval):
+    key = f"{PREFIX}{symbol}.csv"  # S3 object key, e.g., data/1h/AAPL.csv
     local_filename = f"{symbol}.csv"
 
-    # Check if the CSV exists on S3; if so, download it.
+    # Check if the CSV exists in S3; if yes, download it.
     if file_exists_in_s3(BUCKET_NAME, key):
         s3.download_file(BUCKET_NAME, key, local_filename)
-        df_existing = pd.read_csv(local_filename, parse_dates=["Datetime"])
+        df_existing = pd.read_csv(local_filename)
+        df_existing['Date'] = pd.to_datetime(df_existing['Date'])
+        df_existing = df_existing.reset_index(drop=True)
     else:
         df_existing = None
 
-    # Fetch the last 2 years of daily data
-    df_new = yf.download(tickers=symbol, period="2y", interval="1d")
+    df_new = yf.download(tickers=symbol, period=period, interval=interval).reset_index()
+
     if df_new.empty:
         print(f"No new data available for {symbol}")
         return
 
-    # Extract the latest row and its timestamp
-    latest_row = df_new.iloc[-1]
-    timestamp = df_new.index[-1]
+    if isinstance(df_new.columns, pd.MultiIndex):
+        df_new.columns = df_new.columns.get_level_values(0)
 
-    # Create a DataFrame from the latest row; reset index so timestamp becomes a column.
-    latest_df = pd.DataFrame(latest_row).T
-    latest_df.index.name = "Datetime"
-    latest_df = latest_df.reset_index()
+    df_new['Date'] = pd.to_datetime(df_new['Date'])
+    df_new = df_new.reset_index(drop=True)
 
     # Update the CSV if new data is found
     if df_existing is not None:
-        if (df_existing["Datetime"] == timestamp).any():
-            print(f"No new daily data for {symbol} (timestamp {timestamp} already exists).")
-        else:
-            updated_df = pd.concat([df_existing, latest_df], ignore_index=True)
-            updated_df.to_csv(local_filename, index=False)
-            s3.upload_file(local_filename, BUCKET_NAME, key)
-            print(f"Updated {symbol} daily CSV with new data at {timestamp}.")
-    else:
-        latest_df.to_csv(local_filename, index=False)
+        updated_df = pd.concat([df_existing, df_new], ignore_index=True)
+        updated_df = updated_df.drop_duplicates(subset=['Date'])
+        updated_df = updated_df.sort_values(by='Date')
+        updated_df.to_csv(local_filename, index=False)
         s3.upload_file(local_filename, BUCKET_NAME, key)
-        print(f"Created new daily CSV for {symbol} with data at {timestamp}.")
+        print(f"Updated {symbol} hourly CSV with new data.")
+
+    else:
+        # Create a new CSV file if it doesn't exist
+        df_new.to_csv(local_filename, index=False)
+        s3.upload_file(local_filename, BUCKET_NAME, key)
+        print(f"Created new hourly CSV for {symbol} with data.")
+
 
 # Retrieve all S&P 500 tickers
 symbols = get_sp500_tickers()
 print(f"Total tickers: {len(symbols)}")
 
+interval, period = '1d', '1y'
 # Update each symbol
 for symbol in symbols:
     try:
-        update_symbol_daily(symbol)
+        update_symbol_hourly(symbol=symbol,
+                             period=period,
+                             interval=interval)
     except Exception as e:
         print(f"Error updating {symbol}: {e}")
