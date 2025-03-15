@@ -5,9 +5,10 @@ import io
 import streamlit as st
 
 # AWS S3 configuration: retrieve credentials from environment variables
-AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY")
-AWS_SECRET_KEY = os.environ.get("AWS_SECRET_KEY")
-BUCKET_NAME = os.environ.get("BUCKET_NAME", "stocks-streamlit")
+# Access your AWS credentials and bucket name from st.secrets
+AWS_ACCESS_KEY = st.secrets["AWS"]["AWS_ACCESS_KEY"]
+AWS_SECRET_KEY = st.secrets["AWS"]["AWS_SECRET_KEY"]
+BUCKET_NAME = st.secrets["AWS"].get("BUCKET_NAME", "stocks-streamlit")
 PREFIX = 'data/1d/'  # For daily data, we use a subfolder "data/1d/"
 
 # Initialize the S3 client
