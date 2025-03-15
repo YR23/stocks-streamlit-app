@@ -1,10 +1,12 @@
 import streamlit as st
+
+st.set_page_config(layout="wide")  # Enable wide mode
+
 import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-st.set_page_config(layout="wide")  # Enable wide mode
 st.title("Candlestick, 50 EMA, RSI, MACD & Fibonacci Levels")
 
 
@@ -96,6 +98,7 @@ fig = make_subplots(rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.02,
 # 5. MACD Signal (row 3)
 num_traces_per_symbol = 5
 
+# Add traces for all symbols (default: only first symbol is visible)
 for i, symbol in enumerate(symbols):
     df = data_dict[symbol].reset_index()  # Reset index to have a 'Date' column
     # Candlestick trace
@@ -162,50 +165,10 @@ for i, symbol in enumerate(symbols):
         row=3, col=1
     )
 
-# Total number of traces = number of symbols * num_traces_per_symbol
-total_traces = len(symbols) * num_traces_per_symbol
-
-# Create dropdown buttons to switch between symbols.
-# Each button updates the visible traces and also updates the layout shapes (the Fibonacci retracement lines).
-dropdown_buttons = []
-for i, symbol in enumerate(symbols):
-    visibility = [False] * total_traces
-    start_index = i * num_traces_per_symbol
-    for j in range(num_traces_per_symbol):
-        visibility[start_index + j] = True
-    dropdown_buttons.append(
-        dict(
-            label=symbol,
-            method="update",
-            args=[{"visible": visibility},
-                  {"title": f"Candlestick, 50 EMA, RSI, MACD & Fibonacci Levels for {symbol} - 1 Year of Daily Data",
-                   "shapes": shapes_dict[symbol]
-                   }]
-        )
-    )
-
-fig.update_layout(
-    updatemenus=[dict(
-        active=0,
-        buttons=dropdown_buttons,
-        direction="down",
-        x=1.1,
-        y=0.8,
-        showactive=True,
-    )],
-    title=f"Candlestick, 50 EMA, RSI, MACD & Fibonacci Levels for {symbols[0]} - 1 Year of Daily Data",
-    xaxis_title="Date",
-    yaxis_title="Price",
-    xaxis_rangeslider_visible=False,
-    template="plotly_white",
-    height=800  # Adjust the height as needed
-)
-
 # Optionally, update the x-axis to remove weekend gaps (for daily data)
 fig.update_xaxes(rangebreaks=[dict(bounds=["sat", "mon"])])
 
 # --- Add Horizontal RSI Lines at 70 and 30 to the RSI subplot (row 2) ---
-# Using yref "y2" so they appear only in the RSI subplot.
 rsi_x0 = data_dict[symbols[0]].index.min()
 rsi_x1 = data_dict[symbols[0]].index.max()
 fig.add_shape(
@@ -229,5 +192,28 @@ fig.add_shape(
     line=dict(color="black", dash="dot", width=1)
 )
 
+# --- Use a Streamlit selectbox to choose a symbol ---
+selected_symbol = st.selectbox("Select Symbol", symbols)
+selected_index = symbols.index(selected_symbol)
+
+# Update figure: set visible traces based on the selected symbol
+for i, trace in enumerate(fig.data):
+    # Each symbol has num_traces_per_symbol traces in order
+    if (i // num_traces_per_symbol) == selected_index:
+        trace.visible = True
+    else:
+        trace.visible = False
+
+# Update layout with the corresponding Fibonacci shapes and title
+fig.layout.shapes = shapes_dict[selected_symbol]
+fig.update_layout(
+    title=f"Candlestick, 50 EMA, RSI, MACD & Fibonacci Levels for {selected_symbol} - 1 Year of Daily Data",
+    xaxis_title="Date",
+    yaxis_title="Price",
+    xaxis_rangeslider_visible=False,
+    template="plotly_white",
+    height=800)
+
 # Display the Plotly chart in Streamlit
 st.plotly_chart(fig, use_container_width=True)
+
