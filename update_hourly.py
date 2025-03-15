@@ -38,55 +38,56 @@ def file_exists_in_s3(bucket, key):
             raise
 
 
-def update_symbol_hourly(symbol):
+def update_symbol_hourly(symbol, period, interval):
     key = f"{PREFIX}{symbol}.csv"  # S3 object key, e.g., data/1h/AAPL.csv
     local_filename = f"{symbol}.csv"
 
     # Check if the CSV exists in S3; if yes, download it.
     if file_exists_in_s3(BUCKET_NAME, key):
         s3.download_file(BUCKET_NAME, key, local_filename)
-        df_existing = pd.read_csv(local_filename, parse_dates=["Datetime"])
+        df_existing = pd.read_csv(local_filename)
+        df_existing['Datetime'] = pd.to_datetime(df_existing['Datetime'])
+        df_existing = df_existing.reset_index(drop=True)
     else:
         df_existing = None
 
-    # Fetch the latest hourly data from yfinance using a 1-month period
-    df_new = yf.download(tickers=symbol, period="1mo", interval="60m")
+    df_new = yf.download(tickers=symbol, period=period, interval=interval).reset_index()
+    df_new['Datetime'] = pd.to_datetime(df_new['Datetime'])
     if df_new.empty:
         print(f"No new data available for {symbol}")
         return
 
-    # Extract the latest row (latest hour of data) and its timestamp
-    latest_row = df_new.iloc[-1]
-    timestamp = df_new.index[-1]
+    if isinstance(df_new.columns, pd.MultiIndex):
+        df_new.columns = df_new.columns.get_level_values(0)
 
-    # Create a DataFrame from the latest row; reset index so that the timestamp becomes a column.
-    latest_df = pd.DataFrame(latest_row).T
-    latest_df.index.name = "Datetime"
-    latest_df = latest_df.reset_index()
+    df_new = df_new.reset_index(drop=True)
 
     # Update the CSV if new data is found
     if df_existing is not None:
-        if (df_existing["Datetime"] == timestamp).any():
-            print(f"No new hourly data for {symbol} (timestamp {timestamp} already exists).")
-        else:
-            updated_df = pd.concat([df_existing, latest_df], ignore_index=True)
-            updated_df.to_csv(local_filename, index=False)
-            s3.upload_file(local_filename, BUCKET_NAME, key)
-            print(f"Updated {symbol} hourly CSV with new data at {timestamp}.")
+        updated_df = pd.concat([df_existing, df_new], ignore_index=True)
+        updated_df = updated_df.drop_duplicates(subset=['Datetime'])
+        updated_df = updated_df.sort_values(by='Datetime')
+        updated_df.to_csv(local_filename, index=False)
+        s3.upload_file(local_filename, BUCKET_NAME, key)
+        print(f"Updated {symbol} hourly CSV with new data.")
+
     else:
         # Create a new CSV file if it doesn't exist
-        latest_df.to_csv(local_filename, index=False)
+        df_new.to_csv(local_filename, index=False)
         s3.upload_file(local_filename, BUCKET_NAME, key)
-        print(f"Created new hourly CSV for {symbol} with data at {timestamp}.")
+        print(f"Created new hourly CSV for {symbol} with data.")
 
 
 # Retrieve all S&P 500 tickers
 symbols = get_sp500_tickers()
 print(f"Total tickers: {len(symbols)}")
 
+interval,period = "60m", "1mo"
 # Update each symbol
 for symbol in symbols:
     try:
-        update_symbol_hourly(symbol)
+        update_symbol_hourly(symbol=symbol,
+                             period=period,
+                             interval=interval)
     except Exception as e:
         print(f"Error updating {symbol}: {e}")
