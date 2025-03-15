@@ -53,6 +53,7 @@ if go_plot:
     df['MACD'], df['MACD_Signal'] = compute_MACD(df['Close'])
     df['EMA50'] = df['Close'].ewm(span=50, adjust=False).mean()
 
+    st.dataframe(df)
     # Create a figure with 3 rows:
     # Row 1: Candlestick chart with the 50 EMA and Fibonacci levels,
     # Row 2: RSI, and
@@ -67,6 +68,7 @@ if go_plot:
     # 4. MACD (row 3)
     # 5. MACD Signal (row 3)
     num_traces_per_symbol = 5
+
 
     # Add traces for all symbols (default: only first symbol is visible)
     # Candlestick trace
