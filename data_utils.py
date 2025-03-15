@@ -34,4 +34,5 @@ def read_symbol_data_from_s3(symbol):
 
     # Read the CSV data into a DataFrame.
     df = pd.read_csv(io.BytesIO(data), parse_dates=['Datetime'])
+    st.dataframe(df)
     return df
