@@ -56,7 +56,6 @@ if go_plot:
 
     df = df.reset_index()
 
-    st.dataframe(df)
     # Create a figure with 3 rows:
     # Row 1: Candlestick chart with the 50 EMA and Fibonacci levels,
     # Row 2: RSI, and
