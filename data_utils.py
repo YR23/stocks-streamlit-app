@@ -2,6 +2,7 @@ import os
 import boto3
 import pandas as pd
 import io
+import streamlit as st
 
 # AWS S3 configuration: retrieve credentials from environment variables
 AWS_ACCESS_KEY = os.environ.get("AWS_ACCESS_KEY")
@@ -23,6 +24,8 @@ def read_symbol_data_from_s3(symbol):
     s3://{BUCKET_NAME}/{PREFIX}{symbol}.csv
     """
     key = f"{PREFIX}{symbol}.csv"  # e.g., "data/1d/AAPL.csv"
+
+    st.write(BUCKET_NAME, key)
 
     # Retrieve the object from S3
     response = s3.get_object(Bucket=BUCKET_NAME, Key=key)
