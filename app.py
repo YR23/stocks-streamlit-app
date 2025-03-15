@@ -53,6 +53,8 @@ if go_plot:
     df['MACD'], df['MACD_Signal'] = compute_MACD(df['Close'])
     df['EMA50'] = df['Close'].ewm(span=50, adjust=False).mean()
 
+    df = df.reset_index()
+
     st.dataframe(df)
     # Create a figure with 3 rows:
     # Row 1: Candlestick chart with the 50 EMA and Fibonacci levels,
