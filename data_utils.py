@@ -33,8 +33,6 @@ def read_symbol_data_from_s3(symbol, tf):
 
     key = f"{PREFIX}{symbol}.csv"  # e.g., "data/1d/AAPL.csv"
 
-    st.write(BUCKET_NAME, key)
-
     # Retrieve the object from S3
     response = s3.get_object(Bucket=BUCKET_NAME, Key=key)
     data = response['Body'].read()
