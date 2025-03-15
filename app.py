@@ -45,42 +45,6 @@ for symbol in symbols:
     df['RSI'] = compute_RSI(df['Close'])
     df['MACD'], df['MACD_Signal'] = compute_MACD(df['Close'])
     df['EMA50'] = df['Close'].ewm(span=50, adjust=False).mean()
-
-    # --- Calculate Fibonacci Retracement Levels ---
-    overall_high = df['High'].max()
-    overall_low = df['Low'].min()
-    diff = overall_high - overall_low
-    fib_levels = {
-        "0%": overall_high,
-        "23.6%": overall_high - 0.236 * diff,
-        "38.2%": overall_high - 0.382 * diff,
-        "50%": overall_high - 0.5 * diff,
-        "61.8%": overall_high - 0.618 * diff,
-        "100%": overall_low,
-    }
-
-    # Define x-range for the horizontal lines (using the data's date range)
-    x0 = df.index.min()
-    x1 = df.index.max()
-
-    # Create a list of shapes (horizontal lines) for the Fibonacci levels.
-    shapes = []
-    for level_name, level_value in fib_levels.items():
-        shapes.append(dict(
-            type='line',
-            xref='x',
-            yref='y',
-            x0=x0,
-            x1=x1,
-            y0=level_value,
-            y1=level_value,
-            line=dict(
-                color='grey',
-                width=1,
-                dash='dash'
-            )
-        ))
-    shapes_dict[symbol] = shapes
     data_dict[symbol] = df
 
 # Create a figure with 3 rows:
