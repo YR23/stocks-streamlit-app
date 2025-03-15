@@ -136,8 +136,8 @@ if go_plot:
     fig.update_xaxes(rangebreaks=[dict(bounds=["sat", "mon"])])
 
     # --- Add Horizontal RSI Lines at 70 and 30 to the RSI subplot (row 2) ---
-    rsi_x0 = df.index.min()
-    rsi_x1 = df.index.max()
+    rsi_x0 = df.Date.min()
+    rsi_x1 = df.Date.max()
     fig.add_shape(
         type="line",
         xref="x",
