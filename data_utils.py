@@ -41,4 +41,7 @@ def read_symbol_data_from_s3(symbol, tf):
 
     # Read the CSV data into a DataFrame.
     df = pd.read_csv(io.BytesIO(data))
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.get_level_values(0)
+    df = df.rename(columns={'Datetime': 'Date'})
     return df
