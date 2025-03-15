@@ -26,4 +26,4 @@ jobs:
           AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
           AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
           BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
-        run: python update_data.py
+        run: python update_hourly.py
