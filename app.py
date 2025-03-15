@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+st.set_page_config(layout="wide")  # Enable wide mode
 st.title("Candlestick, 50 EMA, RSI, MACD & Fibonacci Levels")
 
 
