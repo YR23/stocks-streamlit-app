@@ -1,7 +1,5 @@
 import streamlit as st
 
-from stock_utils import get_sp500_tickers
-
 st.set_page_config(layout="wide")  # Enable wide mode
 
 import yfinance as yf
@@ -33,7 +31,7 @@ def compute_MACD(series, span_short=12, span_long=26, span_signal=9):
 
 
 # List of S&P 500 symbols
-symbols = get_sp500_tickers()
+symbols = ['AAPL', 'MSFT', 'AMZN']
 data_dict = {}
 shapes_dict = {}
 

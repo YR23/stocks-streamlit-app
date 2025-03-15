@@ -5,3 +5,5 @@ pandas==2.2.3
 boto3
 botocore
 trendln==0.1.10
+lxml
+requests
