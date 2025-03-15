@@ -9,7 +9,7 @@ import streamlit as st
 AWS_ACCESS_KEY = st.secrets["AWS"]["AWS_ACCESS_KEY"]
 AWS_SECRET_KEY = st.secrets["AWS"]["AWS_SECRET_KEY"]
 BUCKET_NAME = st.secrets["AWS"].get("BUCKET_NAME", "stocks-streamlit")
-PREFIX = 'data/1d/'  # For daily data, we use a subfolder "data/1d/"
+PREFIX = 'data/1w/'  # For daily data, we use a subfolder "data/1d/"
 
 # Initialize the S3 client
 s3 = boto3.client('s3',
