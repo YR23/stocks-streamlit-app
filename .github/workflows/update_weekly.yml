@@ -1,29 +1,29 @@
-name: Update Weekly Stock Data
-
-on:
-  schedule:
-    - cron: '0 23 * * 0'  # Runs every Sunday at 23:00 UTC (0 represents Sunday)
-  workflow_dispatch:      # Allows manual triggering from GitHub Actions
-
-jobs:
-  update_weekly:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.x'
-
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Run update_weekly script
-        env:
-          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
-          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
-          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
-        run: python update_weekly.py
+#name: Update Weekly Stock Data
+#
+#on:
+#  schedule:
+#    - cron: '0 23 * * 0'  # Runs every Sunday at 23:00 UTC (0 represents Sunday)
+#  workflow_dispatch:      # Allows manual triggering from GitHub Actions
+#
+#jobs:
+#  update_weekly:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v2
+#
+#      - name: Set up Python
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: '3.x'
+#
+#      - name: Install dependencies
+#        run: pip install -r requirements.txt
+#
+#      - name: Run update_weekly script
+#        env:
+#          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+#          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+#          BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
+#        run: python update_weekly.py
